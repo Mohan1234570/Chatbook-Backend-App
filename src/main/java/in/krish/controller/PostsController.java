@@ -60,6 +60,7 @@ import in.krish.entity.Post;
 import in.krish.entity.Comment;
 import in.krish.impl.PostServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -109,16 +110,21 @@ public class PostsController {
         return ResponseEntity.ok(postService.getPostsByUser(userEmail));
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updatePost(
-            @PathVariable Integer id,
+            @PathVariable Integer postId,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam("userEmail") String userEmail) {
         try {
-            Post updatedPost = postService.updatePost(id, title, content, userEmail, image);
-            return ResponseEntity.ok(updatedPost);
+            Post updatedPost = postService.updatePost(postId, title, content, userEmail, image);
+            ApiResponse<Post> response = new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Post updated successfully",
+                    updatedPost
+            );
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
