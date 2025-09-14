@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import in.krish.entity.Comment;
 
-public interface CommentRepo extends JpaRepository<Comment , Integer> {
+import java.util.List;
 
+public interface CommentRepo extends JpaRepository<Comment , Integer> {
+    List<Comment> findByPostId(Integer postId);
 }

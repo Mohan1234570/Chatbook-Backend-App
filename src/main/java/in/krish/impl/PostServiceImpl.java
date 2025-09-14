@@ -1,41 +1,8 @@
-//package in.krish.impl;
-//
-//import in.krish.binding.PostRequest;
-//import in.krish.entity.Post;
-//import in.krish.entity.User;
-//import in.krish.repo.PostRepo;
-//import in.krish.repo.UserRepo;
-//import in.krish.service.PostService;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//public class PostServiceImpl implements PostService {
-//
-//    @Autowired
-//    private UserRepo userRepo;
-//
-//    @Autowired
-//    private PostRepo postRepo;
-//
-//    public Post createPost(PostRequest request, String userEmail) {
-//        User user = userRepo.findByEmailid(userEmail);
-//        if (user == null) {
-//            throw new RuntimeException("User not found with email: " + userEmail);
-//        }
-//
-//        Post post = new Post();
-//        post.setTitle(request.getTitle());
-//        post.setContent(request.getContent());
-//        post.setUser(user);
-//        return postRepo.save(post);
-//    }
-//
-//}
 
 
 package in.krish.impl;
 
+import in.krish.binding.CommentDTO;
 import in.krish.binding.PostRequest;
 //import in.krish.binding.PostSummaryDto;
 import in.krish.entity.Like;
@@ -54,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -64,6 +30,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -119,11 +87,11 @@ public class PostServiceImpl implements PostService {
         return postRepo.save(post);
     }
 
-//
-//    @Override
-//    public List<PostSummaryDto> fetchAllPostSummaries() {
-//        return postRepo.fetchAllPostSummaries();
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<Post> getAllPosts() {
+        return postRepo.findAll();
+    }
 
 
 
@@ -315,4 +283,10 @@ public class PostServiceImpl implements PostService {
 
         commentRepo.delete(comment);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<Comment> getAllCommentsForPost(Integer postId) {
+        return commentRepo.findByPostId(postId);
+    }
+
 }

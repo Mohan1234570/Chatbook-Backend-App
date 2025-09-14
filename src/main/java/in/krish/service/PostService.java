@@ -11,6 +11,7 @@
 
 package in.krish.service;
 
+import in.krish.binding.CommentDTO;
 import in.krish.binding.PostRequest;
 //import in.krish.binding.PostSummaryDto;
 import in.krish.entity.Post;
@@ -24,6 +25,7 @@ public interface PostService {
     Post createPost(PostRequest request, String userEmail, MultipartFile image) throws IOException;
 //    public List<PostSummaryDto> fetchAllPostSummaries();
     Post getPostById(Integer id);
+    public List<Post> getAllPosts();
     List<Post> getPostsByUser(String userEmail);
     Post updatePost(Integer id, String title, String content, String userEmail, MultipartFile image) throws IOException;
     void deletePost(Integer id, String userEmail);
@@ -35,4 +37,5 @@ public interface PostService {
     // Comment System
     Comment addComment(Integer postId, String content);
     void deleteComment(Integer postId, Integer commentId, String userEmail);
+    public List<Comment> getAllCommentsForPost(Integer postId);
 }

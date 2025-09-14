@@ -1,19 +1,26 @@
 package in.krish.binding;
 
 import in.krish.entity.Comment;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommentResponse {
     private Integer id;
     private String content;
-    private String userName; // or userEmail
-    private Integer postId;
+    private String email; // or userEmail
 
     public CommentResponse(Comment comment) {
         this.id = comment.getId();
         this.content = comment.getContent();
-        this.userName = comment.getUser().getEmailid(); // or getEmail()
-        this.postId = comment.getPost().getId();
+        this.email = comment.getUser().getEmailid(); // or getEmail()
     }
+
 
     // getters and setters
 }

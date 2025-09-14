@@ -53,20 +53,23 @@
 
 package in.krish.controller;
 
-import in.krish.binding.ApiResponse;
-import in.krish.binding.CommentResponse;
-import in.krish.binding.PostRequest;
+import in.krish.binding.*;
 //import in.krish.binding.PostSummaryDto;
 import in.krish.entity.Post;
 import in.krish.entity.Comment;
 import in.krish.impl.PostServiceImpl;
+import in.krish.repo.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -75,6 +78,7 @@ public class PostsController {
 
     @Autowired
     private PostServiceImpl postService;
+
 
     //this method for create a new post
     @PostMapping(consumes = "multipart/form-data")
@@ -91,11 +95,16 @@ public class PostsController {
     }
 
 
-//    @GetMapping("/summary")
-//    public ResponseEntity<List<PostSummaryDto>> getPostSummaries() {
-//        List<PostSummaryDto> summaries = postService.fetchAllPostSummaries();
-//        return ResponseEntity.ok(summaries);
-//    }
+    @GetMapping
+    public ApiResponse<List<PostDTO>> getAllPosts() {
+        List<Post> posts = postService.getAllPosts();
+
+        List<PostDTO> postDTOs = posts.stream()
+                .map(PostDTO::new)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(200, "Posts fetched successfully", postDTOs);
+    }
 
 
 
@@ -106,9 +115,22 @@ public class PostsController {
     }
 
 
-    @GetMapping("/user/{userEmail}")
-    public ResponseEntity<List<Post>> getPostsByUser(@PathVariable String userEmail) {
-        return ResponseEntity.ok(postService.getPostsByUser(userEmail));
+//    @GetMapping("/user/{userEmail}")
+//    public ResponseEntity<List<Post>> getPostsByUser(@PathVariable String userEmail) {
+//        return ResponseEntity.ok(postService.getPostsByUser(userEmail));
+//    }
+
+    @GetMapping("/userPosts")
+    public ApiResponse<List<PostDTO>> getMyPosts(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername(); // email from token
+        List<Post> posts = postService.getPostsByUser(email);
+
+        // Convert to DTO
+        List<PostDTO> postDTOs = posts.stream()
+                .map(PostDTO::new)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(200, "Posts fetched successfully", postDTOs);
     }
 
     @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -162,16 +184,15 @@ public class PostsController {
     }
 
     @PostMapping("/{postId}/comment")
-    public ResponseEntity<?> addComment(@PathVariable Integer postId, @RequestParam String content) {
+    public ResponseEntity<?> addComment(@PathVariable Integer postId, @RequestBody CommentRequest request) {
         try {
-            Comment comment = postService.addComment(postId, content);
-            CommentResponse response = new CommentResponse(comment);
-            return ResponseEntity.ok(response);
+            Comment comment = postService.addComment(postId, request.getContent());
+            CommentResponse response = new CommentResponse(comment.getId(), comment.getContent(), comment.getUser().getEmailid());
+            return ResponseEntity.ok(new CommentResponse(comment));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 
 
     @DeleteMapping("/{postId}/comment/{commentId}")
@@ -185,5 +206,18 @@ public class PostsController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // Get all comments for a specific post
+    @GetMapping("/{postId}/comments")
+    public ApiResponse<List<CommentDTO>> getAllComments(@PathVariable Integer postId) {
+        List<Comment> comments = postService.getAllCommentsForPost(postId);
+
+        // Convert Comment entities to CommentDTO
+        List<CommentDTO> commentDTOs = comments.stream()
+                .map(CommentDTO::new)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(200, "Comments fetched successfully", commentDTOs);
     }
 }
