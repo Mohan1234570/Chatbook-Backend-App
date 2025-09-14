@@ -33,6 +33,6 @@ public interface PostService {
     Post unlikePost(Integer postId, String userEmail);
 
     // Comment System
-    Comment addComment(Integer postId, String content, String userEmail);
+    Comment addComment(Integer postId, String content);
     void deleteComment(Integer postId, Integer commentId, String userEmail);
 }

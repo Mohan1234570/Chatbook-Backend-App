@@ -54,6 +54,7 @@
 package in.krish.controller;
 
 import in.krish.binding.ApiResponse;
+import in.krish.binding.CommentResponse;
 import in.krish.binding.PostRequest;
 //import in.krish.binding.PostSummaryDto;
 import in.krish.entity.Post;
@@ -161,17 +162,16 @@ public class PostsController {
     }
 
     @PostMapping("/{postId}/comment")
-    public ResponseEntity<ApiResponse<Comment>> addComment(
-            @PathVariable Integer postId,
-            @RequestParam String content,
-            @RequestParam String userEmail) {
+    public ResponseEntity<?> addComment(@PathVariable Integer postId, @RequestParam String content) {
         try {
-            Comment comment = postService.addComment(postId, content, userEmail);
-            return ResponseEntity.ok(new ApiResponse<>(200, "Comment added", comment));
+            Comment comment = postService.addComment(postId, content);
+            CommentResponse response = new CommentResponse(comment);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Failed to add comment: " + e.getMessage(), null));
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
 
     @DeleteMapping("/{postId}/comment/{commentId}")

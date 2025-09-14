@@ -49,6 +49,8 @@ import in.krish.repo.CommentRepo;
 import in.krish.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -265,15 +267,23 @@ public class PostServiceImpl implements PostService {
         return postRepo.save(post); // like count is derived from likedBy.size()
     }
 
-
     @Override
-    public Comment addComment(Integer postId, String content, String userEmail) {
+    @Transactional
+    public Comment addComment(Integer postId, String content) {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
 
-        User user = userRepo.findByEmailid(userEmail);
+        // Get the currently authenticated user from the Security Context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName(); // Assuming username is email
+        User user = userRepo.findByEmailid(email);
         if (user == null) {
-            throw new RuntimeException("User not found with email: " + userEmail);
+            throw new RuntimeException("User not found with email: " + email);
         }
 
         Comment comment = new Comment();
@@ -283,6 +293,7 @@ public class PostServiceImpl implements PostService {
 
         return commentRepo.save(comment);
     }
+
 
     @Override
     public void deleteComment(Integer postId, Integer commentId, String userEmail) {
