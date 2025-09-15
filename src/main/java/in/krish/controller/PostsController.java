@@ -115,11 +115,6 @@ public class PostsController {
     }
 
 
-//    @GetMapping("/user/{userEmail}")
-//    public ResponseEntity<List<Post>> getPostsByUser(@PathVariable String userEmail) {
-//        return ResponseEntity.ok(postService.getPostsByUser(userEmail));
-//    }
-
     @GetMapping("/userPosts")
     public ApiResponse<List<PostDTO>> getMyPosts(@AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername(); // email from token
