@@ -2,9 +2,7 @@
 
 package in.krish.impl;
 
-import in.krish.binding.CommentDTO;
 import in.krish.binding.PostRequest;
-//import in.krish.binding.PostSummaryDto;
 import in.krish.entity.Like;
 import in.krish.entity.Post;
 import in.krish.entity.User;
