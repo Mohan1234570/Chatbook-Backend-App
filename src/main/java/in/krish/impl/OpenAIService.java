@@ -4,7 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,32 +24,17 @@ public class OpenAIService {
         this.apiKey = apiKey;
     }
 
-    /**
-     * Generate AI reply using OpenAI Chat Completions API.
-     *
-     * @param userMessage The message sent by the user
-     * @return AI generated reply
-     */
     public String generateReply(String userMessage) {
-        // Prepare request body
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-3.5-turbo"); // Or "gpt-4"
-
-        // The messages array with role and content
-        List<Map<String, String>> messages = List.of(
-                Map.of("role", "user", "content", userMessage)
-        );
-        requestBody.put("messages", messages);
-
-        requestBody.put("temperature", 0.7);
-        requestBody.put("max_tokens", 150);
-
         try {
-            // Call OpenAI API
+            Map<String, Object> requestBody = Map.of(
+                    "model", "gpt-3.5-turbo",
+                    "messages", List.of(
+                            Map.of("role", "system", "content", "You are a helpful assistant."),
+                            Map.of("role", "user", "content", userMessage)
+                    )
+            );
+
             return webClient.post()
-                    .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("Content-Type", "application/json")
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(Map.class)
@@ -58,16 +46,21 @@ public class OpenAIService {
                                 return message.get("content").toString().trim();
                             }
                         }
-                        return "Sorry, I couldn't generate a response.";
+                        return "⚠️ Sorry, I couldn't generate a response.";
                     })
-                    .block(); // Blocking call to wait for the response
-        } catch (WebClientResponseException e) {
-            // Log API errors
-            e.printStackTrace();
-            return "Error: Unable to generate AI response.";
+                    // Handle 429 rate limit errors
+                    .onErrorResume(WebClientResponseException.TooManyRequests.class, e -> {
+                        String retryAfter = e.getHeaders().getFirst("Retry-After");
+                        return Mono.just("⚠️ Rate limited by OpenAI. Please retry after "
+                                + (retryAfter != null ? retryAfter + " seconds" : "a while") + ".");
+                    })
+                    // Handle any other errors
+                    .onErrorResume(Exception.class, e ->
+                            Mono.just("⚠️ Unexpected error occurred while generating AI response."))
+                    .block();
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Unexpected error occurred while generating AI response.";
+            return "⚠️ Error: Unable to generate AI response.";
         }
     }
 }
