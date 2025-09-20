@@ -1,16 +1,15 @@
 package in.krish.impl;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class OpenAIService {
@@ -24,43 +23,67 @@ public class OpenAIService {
         this.apiKey = apiKey;
     }
 
+    /**
+     * Generate full AI reply synchronously
+     */
     public String generateReply(String userMessage) {
-        try {
-            Map<String, Object> requestBody = Map.of(
-                    "model", "gpt-3.5-turbo",
-                    "messages", List.of(
-                            Map.of("role", "system", "content", "You are a helpful assistant."),
-                            Map.of("role", "user", "content", userMessage)
-                    )
-            );
+        Map<String, Object> requestBody = Map.of(
+                "model", "gpt-3.5-turbo",
+                "messages", List.of(Map.of("role", "user", "content", userMessage)),
+                "temperature", 0.7,
+                "max_tokens", 150
+        );
 
-            return webClient.post()
+        try {
+            Map<String, Object> response = webClient.post()
+                    .uri("/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(Map.class)
-                    .map(response -> {
-                        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-                        if (choices != null && !choices.isEmpty()) {
-                            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                            if (message != null) {
-                                return message.get("content").toString().trim();
-                            }
-                        }
-                        return "⚠️ Sorry, I couldn't generate a response.";
-                    })
-                    // Handle 429 rate limit errors
-                    .onErrorResume(WebClientResponseException.TooManyRequests.class, e -> {
-                        String retryAfter = e.getHeaders().getFirst("Retry-After");
-                        return Mono.just("⚠️ Rate limited by OpenAI. Please retry after "
-                                + (retryAfter != null ? retryAfter + " seconds" : "a while") + ".");
-                    })
-                    // Handle any other errors
-                    .onErrorResume(Exception.class, e ->
-                            Mono.just("⚠️ Unexpected error occurred while generating AI response."))
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(2)))
                     .block();
 
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            if (choices != null && !choices.isEmpty()) {
+                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                if (message != null) return message.get("content").toString().trim();
+            }
+            return "Sorry, could not generate a response.";
+        } catch (WebClientResponseException e) {
+            return "OpenAI error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString();
         } catch (Exception e) {
-            return "⚠️ Error: Unable to generate AI response.";
+            return "Unexpected error: " + e.getMessage();
         }
+    }
+
+    /**
+     * Stream AI reply token-by-token for SSE (reactive)
+     */
+    public Flux<String> streamReply(String userMessage) {
+        Map<String, Object> requestBody = Map.of(
+                "model", "gpt-3.5-turbo",
+                "messages", List.of(Map.of("role", "user", "content", userMessage)),
+                "temperature", 0.7,
+                "max_tokens", 150,
+                "stream", true
+        );
+
+        AtomicReference<StringBuilder> aggregator = new AtomicReference<>(new StringBuilder());
+
+        return webClient.post()
+                .uri("/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToFlux(Map.class) // Each token chunk as a map
+                .map(chunk -> {
+                    // OpenAI streaming sends small JSON chunks with 'content'
+                    Map<String, Object> delta = (Map<String, Object>) ((Map<String, Object>) ((List) chunk.get("choices")).get(0)).get("delta");
+                    String token = delta != null ? (String) delta.getOrDefault("content", "") : "";
+                    aggregator.get().append(token);
+                    return token;
+                })
+                .doOnError(err -> System.err.println("Stream error: " + err.getMessage()));
     }
 }

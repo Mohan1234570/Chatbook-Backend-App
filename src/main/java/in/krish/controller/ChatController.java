@@ -1,54 +1,47 @@
 package in.krish.controller;
 
-
-import in.krish.entity.ChatMessage;
-import in.krish.entity.ChatSession;
-import in.krish.impl.ChatService;
 import in.krish.impl.OpenAIService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import org.springframework.http.codec.ServerSentEvent;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    private final ChatService chatService;
-    private final OpenAIService openAIService;
+    private final OpenAIService aiChatService;
 
-    public ChatController(ChatService chatService, OpenAIService openAIService) {
-        this.chatService = chatService;
-        this.openAIService = openAIService;
+    public ChatController(OpenAIService aiChatService) {
+        this.aiChatService = aiChatService;
     }
 
-    @PostMapping("/start")
-    public ResponseEntity<Map<String, String>> startChat(@RequestParam Long userId) {
-        ChatSession session = chatService.createSession(userId);
-        return ResponseEntity.ok(Map.of("sessionId", session.getSessionId()));
-    }
-
-    @PostMapping("/reply")
+    /**
+     * Synchronous AI reply (full response)
+     */
+    @PostMapping("/send")
     public ResponseEntity<Map<String, String>> sendMessage(@RequestBody Map<String, String> request) {
-        String sessionId = request.get("sessionId");
         String userMessage = request.get("message");
-
-        // Save user message
-        chatService.saveMessage(sessionId, "USER", userMessage);
-
-        // Get AI reply
-        String aiReply = openAIService.generateReply(userMessage);
-
-        // Save AI reply
-        chatService.saveMessage(sessionId, "AI", aiReply);
-
+        String aiReply = aiChatService.generateReply(userMessage);
         return ResponseEntity.ok(Map.of("reply", aiReply));
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<List<ChatMessage>> getHistory(@RequestParam String sessionId) {
-        return ResponseEntity.ok(chatService.getMessages(sessionId));
+    /**
+     * Streaming AI reply (SSE) - realtime typing effect
+     */
+    @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<String>> streamMessage(@RequestBody Map<String, String> request) {
+        String userMessage = request.get("message");
+
+        // Stream tokens from AI
+        return aiChatService.streamReply(userMessage)
+                .map(token -> ServerSentEvent.builder(token)
+                        .event("token")
+                        .build())
+                .doOnError(err -> System.err.println("SSE stream error: " + err.getMessage()))
+                .concatWith(Flux.just(ServerSentEvent.builder("[DONE]").event("done").build()));
     }
 }
-
