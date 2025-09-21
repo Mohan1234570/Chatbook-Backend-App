@@ -1,63 +1,13 @@
-//package in.krish.controller;
-//
-//import in.krish.binding.ApiResponse;
-//import in.krish.binding.PostRequest;
-//import in.krish.entity.Post;
-//import in.krish.impl.PostServiceImpl;
-//import in.krish.jwtUtils.JwtUtil;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.RequestBody;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//import javax.servlet.http.HttpServletRequest;
-//
-//@RestController
-//public class PostsController {
-//
-//    @Autowired
-//    private PostServiceImpl postService;
-//
-//    @Autowired
-//    private JwtUtil jwtUtil;
-//
-//
-//    @PostMapping("/post")
-//    public ResponseEntity<ApiResponse<Post>> createPost(@RequestBody PostRequest request, HttpServletRequest httpRequest) {
-//        String userEmail = jwtUtil.extractUsernameFromRequest(httpRequest);
-//        try {
-//            Post post = postService.createPost(request, userEmail);
-//            ApiResponse<Post> response = new ApiResponse<>(
-//                    HttpStatus.OK.value(),
-//                    "Post published successfully",
-//                    post
-//            );
-//            return ResponseEntity.ok(response);
-//        } catch (Exception e) {
-//            ApiResponse<Post> response = new ApiResponse<>(
-//                    HttpStatus.BAD_REQUEST.value(),
-//                    "Failed to publish post: " + e.getMessage(),
-//                    null
-//            );
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//        }
-//    }
-//
-//
-//
-//}
-
-
 
 package in.krish.controller;
 
 import in.krish.binding.*;
 //import in.krish.binding.PostSummaryDto;
+import in.krish.entity.FeedEntry;
 import in.krish.entity.Post;
 import in.krish.entity.Comment;
 import in.krish.impl.PostServiceImpl;
+import in.krish.repo.FeedRepository;
 import in.krish.repo.PostRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -68,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
+
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,6 +30,9 @@ public class PostsController {
 
     @Autowired
     private PostServiceImpl postService;
+
+    @Autowired
+    private FeedRepository feedRepo;
 
 
     //this method for create a new post
@@ -214,5 +169,15 @@ public class PostsController {
                 .collect(Collectors.toList());
 
         return new ApiResponse<>(200, "Comments fetched successfully", commentDTOs);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FeedEntry>> getFeed(Principal principal) {
+        Long userId = getUserIdFromPrincipal(principal);
+        return ResponseEntity.ok(feedRepo.findByUserIdOrderByCreatedAtDesc(userId));
+    }
+
+    private Long getUserIdFromPrincipal(Principal principal) {
+        return 1L; // dummy
     }
 }

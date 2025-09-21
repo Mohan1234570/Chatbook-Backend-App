@@ -7,10 +7,7 @@ import in.krish.entity.Like;
 import in.krish.entity.Post;
 import in.krish.entity.User;
 import in.krish.entity.Comment;
-import in.krish.repo.LikeRepo;
-import in.krish.repo.PostRepo;
-import in.krish.repo.UserRepo;
-import in.krish.repo.CommentRepo;
+import in.krish.repo.*;
 import in.krish.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +42,9 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private CommentRepo commentRepo;
+
+    @Autowired
+    private FeedRepository feedRepo;
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
