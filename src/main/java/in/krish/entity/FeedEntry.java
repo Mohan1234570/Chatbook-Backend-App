@@ -1,9 +1,14 @@
 package in.krish.entity;
 
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "feed_entries")
 public class FeedEntry {

@@ -6,6 +6,6 @@ import in.krish.entity.Comment;
 
 import java.util.List;
 
-public interface CommentRepo extends JpaRepository<Comment , Integer> {
-    List<Comment> findByPostId(Integer postId);
+public interface CommentRepo extends JpaRepository<Comment , Long> {
+    List<Comment> findByPostId(Long postId);
 }

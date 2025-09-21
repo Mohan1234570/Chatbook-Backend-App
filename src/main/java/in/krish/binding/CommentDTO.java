@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Setter
 @Getter
 public class CommentDTO {
-    private Integer id;
+    private Long id;
     private String content;
     private String name;
     private String email;

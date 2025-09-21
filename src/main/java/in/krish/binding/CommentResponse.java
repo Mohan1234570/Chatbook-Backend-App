@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentResponse {
-    private Integer id;
+    private Long id;
     private String content;
     private String email; // or userEmail
 

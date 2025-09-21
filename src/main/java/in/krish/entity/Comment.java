@@ -20,8 +20,8 @@ import lombok.Setter;
 public class Comment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id ;
 
-	private Integer id ;
 	@Lob
 	private String content ;
 	private String name ;
