@@ -64,7 +64,7 @@ public class PostsController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Post>> getPostById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Post>> getPostById(@PathVariable Long id) {
         Post post = postService.getPostById(id);
         return ResponseEntity.ok(new ApiResponse<>(200, "Post fetched successfully", post));
     }
@@ -85,7 +85,7 @@ public class PostsController {
 
     @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updatePost(
-            @PathVariable Integer postId,
+            @PathVariable Long postId,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
             @RequestParam(value = "image", required = false) MultipartFile image,
@@ -104,7 +104,7 @@ public class PostsController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable Integer id, @RequestParam String userEmail) {
+    public ResponseEntity<?> deletePost(@PathVariable Long id, @RequestParam String userEmail) {
         try {
             postService.deletePost(id, userEmail);
             return ResponseEntity.ok().build();
@@ -114,7 +114,7 @@ public class PostsController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<?> likePost(@PathVariable Integer postId, @RequestParam String userEmail) {
+    public ResponseEntity<?> likePost(@PathVariable Long postId, @RequestParam String userEmail) {
         try {
             Post post = postService.likePost(postId, userEmail);
             return ResponseEntity.ok(post);
@@ -124,7 +124,7 @@ public class PostsController {
     }
 
     @PostMapping("/{postId}/unlike")
-    public ResponseEntity<?> unlikePost(@PathVariable Integer postId, @RequestParam String userEmail) {
+    public ResponseEntity<?> unlikePost(@PathVariable Long postId, @RequestParam String userEmail) {
         try {
             Post post = postService.unlikePost(postId, userEmail);
             return ResponseEntity.ok(post);
@@ -134,7 +134,7 @@ public class PostsController {
     }
 
     @PostMapping("/{postId}/comment")
-    public ResponseEntity<?> addComment(@PathVariable Integer postId, @RequestBody CommentRequest request) {
+    public ResponseEntity<?> addComment(@PathVariable Long postId, @RequestBody CommentRequest request) {
         try {
             Comment comment = postService.addComment(postId, request.getContent());
             CommentResponse response = new CommentResponse(comment.getId(), comment.getContent(), comment.getUser().getEmailid());
@@ -147,8 +147,8 @@ public class PostsController {
 
     @DeleteMapping("/{postId}/comment/{commentId}")
     public ResponseEntity<?> deleteComment(
-            @PathVariable Integer postId,
-            @PathVariable Integer commentId,
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
             @RequestParam String userEmail) {
         try {
             postService.deleteComment(postId, commentId, userEmail);
@@ -160,7 +160,7 @@ public class PostsController {
 
     // Get all comments for a specific post
     @GetMapping("/{postId}/comments")
-    public ApiResponse<List<CommentDTO>> getAllComments(@PathVariable Integer postId) {
+    public ApiResponse<List<CommentDTO>> getAllComments(@PathVariable Long postId) {
         List<Comment> comments = postService.getAllCommentsForPost(postId);
 
         // Convert Comment entities to CommentDTO
@@ -170,14 +170,14 @@ public class PostsController {
 
         return new ApiResponse<>(200, "Comments fetched successfully", commentDTOs);
     }
-
     @GetMapping
     public ResponseEntity<List<FeedEntry>> getFeed(Principal principal) {
         Long userId = getUserIdFromPrincipal(principal);
-        return ResponseEntity.ok(feedRepo.findByUserIdOrderByCreatedAtDesc(userId));
+        return ResponseEntity.ok(feedRepo.findByUserUserIdOrderByCreatedAtDesc(userId));
     }
 
     private Long getUserIdFromPrincipal(Principal principal) {
-        return 1L; // dummy
+        return 1L; // later you’ll map Principal -> actual User ID
     }
+
 }

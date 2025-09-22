@@ -24,18 +24,18 @@ public interface PostService {
     // Post Management
     Post createPost(PostRequest request, String userEmail, MultipartFile image) throws IOException;
 //    public List<PostSummaryDto> fetchAllPostSummaries();
-    Post getPostById(Integer id);
+    Post getPostById(Long id);
     public List<Post> getAllPosts();
     List<Post> getPostsByUser(String userEmail);
-    Post updatePost(Integer id, String title, String content, String userEmail, MultipartFile image) throws IOException;
-    void deletePost(Integer id, String userEmail);
+    Post updatePost(Long id, String title, String content, String userEmail, MultipartFile image) throws IOException;
+    void deletePost(Long id, String userEmail);
 
     // Like System
-    Post likePost(Integer postId, String userEmail);
-    Post unlikePost(Integer postId, String userEmail);
+    Post likePost(Long postId, String userEmail);
+    Post unlikePost(Long postId, String userEmail);
 
     // Comment System
-    Comment addComment(Integer postId, String content);
-    void deleteComment(Integer postId, Integer commentId, String userEmail);
-    public List<Comment> getAllCommentsForPost(Integer postId);
+    Comment addComment(Long postId, String content);
+    void deleteComment(Long postId, Long commentId, String userEmail);
+    public List<Comment> getAllCommentsForPost(Long postId);
 }
