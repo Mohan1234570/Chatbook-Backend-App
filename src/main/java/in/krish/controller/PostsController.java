@@ -170,7 +170,7 @@ public class PostsController {
 
         return new ApiResponse<>(200, "Comments fetched successfully", commentDTOs);
     }
-    @GetMapping
+    @GetMapping("/feeds")
     public ResponseEntity<List<FeedEntry>> getFeed(Principal principal) {
         Long userId = getUserIdFromPrincipal(principal);
         return ResponseEntity.ok(feedRepo.findByUserUserIdOrderByCreatedAtDesc(userId));

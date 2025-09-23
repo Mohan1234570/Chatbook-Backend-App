@@ -9,10 +9,16 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface FollowerRepo extends JpaRepository<Follower, Long> {
-    List<User> findFollowersByUserId(@Param("userId") Long userId);
-    List<Follower> findByFollowing(User following);
-    List<Follower> findByFollower(User follower);
+
+    // Who follows a user (pass the userId of the "following" user)
+    List<Follower> findByFollowingUserId(Long userId);
+
+    // Who this user is following (pass the userId of the "follower" user)
+    List<Follower> findByFollowerUserId(Long userId);
+
     boolean existsByFollowerAndFollowing(User follower, User following);
+
     void deleteByFollowerAndFollowing(User follower, User following);
 }
+
 
