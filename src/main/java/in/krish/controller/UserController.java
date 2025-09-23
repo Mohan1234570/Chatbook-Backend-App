@@ -102,12 +102,4 @@
 //		return "createPost";
 //	}
 //
-//    /*
-//    @GetMapping("/delete")
-//    public String delete(@RequestParam("id") Integer postid, Model model) {
-//        repo.deleteById(postid);
-//        model.addAttribute("msg", "post deleted");
-//        return "Dashboard";
-//    }
-//    */
 //}
