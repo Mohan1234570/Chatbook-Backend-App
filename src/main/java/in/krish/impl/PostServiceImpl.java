@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
+@Transactional
 public class PostServiceImpl implements PostService {
 
     @Autowired
@@ -85,11 +86,13 @@ public class PostServiceImpl implements PostService {
             Post savedPost = postRepo.save(post);
 
             // fan-out notifications
-// ✅ fan-out notifications to followers
+            // ✅ fan-out notifications to followers
             Long userId = user.getUserId();
-            List<Follower> followers = followerRepo.findByFollowingUserId(userId);
+            List<Follower> followers = followerRepo.findByFollowing_UserId(userId);
+            System.out.println("Followers found for user " + userId + ": " + followers.size());
             for (Follower f : followers) {
                 User follower = f.getFollower();
+                System.out.println("Adding feed + notif for follower: " + follower.getEmailid());
                 FeedEntry entry = new FeedEntry();
                 entry.setUser(follower);
                 entry.setPost(savedPost);
