@@ -83,23 +83,5 @@
 //		return "createPost";
 //	}
 //
-//	@PostMapping("/create")
-//	public String createPosthandle(@ModelAttribute("createPost") CreatePost form, Model model) {
-//		boolean status = userService.createPost(form);
-//
-//		if (status) {
-//			model.addAttribute("succMsg", "Post created");
-//		} else {
-//			model.addAttribute("errMsg", "post not created");
-//		}
-//		return "createPost";
-//	}
-//
-//	@GetMapping("/edit")
-//	public String editPost(@RequestParam("id") Integer userId, Model model) {
-//		Optional<Post> findById = repo.findById(userId);
-//		findById.ifPresent(post -> model.addAttribute("createPost", post));
-//		return "createPost";
-//	}
 //
 //}
