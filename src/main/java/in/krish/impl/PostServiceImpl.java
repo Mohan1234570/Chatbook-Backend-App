@@ -106,7 +106,7 @@ public class PostServiceImpl implements PostService {
                 notificationRepo.save(notif);
             }
 
-            return savedPost;   // ✅ return savedPost instead of post
+            return savedPost;
         }
 
         return postRepo.save(post);  // ✅ fallback when no image
