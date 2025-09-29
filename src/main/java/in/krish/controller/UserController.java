@@ -77,11 +77,6 @@
 //		return "index";
 //	}
 //
-//	@GetMapping("/createPost")
-//	public String createPost(Model model) {
-//		model.addAttribute("createPost", new CreatePost());
-//		return "createPost";
-//	}
 //
 //
 //}
