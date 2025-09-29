@@ -5,7 +5,7 @@ Built with **Spring Boot (Backend)** and **React + Redux + MUI (Frontend)**, the
 
 ---
 
-## 🚀 Features  
+##  Features  
 
 - **User Management**: Registration, login, JWT-based authentication.  
 - **Posts & Comments**: Create posts, comment on posts, like posts.  
