@@ -3,7 +3,6 @@
 Chatbook is a **social media platform** where users can **post, comment, follow, receive notifications, and chat with AI in realtime**.  
 Built with **Spring Boot (Backend)** and **React + Redux + MUI (Frontend)**, the app provides a **modern, scalable architecture** for social networking.  
 
----
 
 ##  Features  
 
