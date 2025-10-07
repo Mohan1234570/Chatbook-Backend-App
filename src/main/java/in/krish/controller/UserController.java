@@ -61,16 +61,6 @@
 //		return "registration";
 //	}
 //
-//	@PostMapping("/register")
-//	public String showBlogUserForm(@ModelAttribute("registrationForm") RegisterForm form, Model model) {
-//		boolean users = userService.registrationForm(form);
-//		if (users) {
-//			model.addAttribute("smsg", "user saved....");
-//		} else {
-//			model.addAttribute("emsg", "email already exist");
-//		}
-//		return "registration";
-//	}
 //
 
 //
