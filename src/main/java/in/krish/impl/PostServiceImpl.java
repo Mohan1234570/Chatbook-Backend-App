@@ -108,7 +108,7 @@ public class PostServiceImpl implements PostService {
             return savedPost;
         }
 
-        return postRepo.save(post);  // ✅ fallback when no image
+        return postRepo.save(post);
     }   // <<< THIS closing brace was missing in your code!
 
 
