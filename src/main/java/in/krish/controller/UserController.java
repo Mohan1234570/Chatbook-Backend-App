@@ -37,16 +37,7 @@
 //		return "login";
 //	}
 //
-//	@PostMapping("/login")
-//	public String loadLogin(@ModelAttribute("logindata") LoginForm form, Model model) {
-//		String status = userService.login(form);
-//		if ("Success".equals(status)) {
-//			return "redirect:/dashboard";
-//		}
-//		model.addAttribute("errmsg", status);
-//		return "login";
-//	}
-//
+
 //	@GetMapping("/dashboard")
 //	public String loadDashboard(Model model, Post post, HttpSession session) {
 //		Integer userId = (Integer) session.getAttribute("userId");
