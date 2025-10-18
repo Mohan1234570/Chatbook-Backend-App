@@ -28,6 +28,7 @@ public class Post {
 
 	@Lob
 	@Basic(fetch = FetchType.LAZY)
+	@JsonIgnore
 	private String content;
 
 	@Column(name = "image_url")
@@ -47,6 +48,7 @@ public class Post {
 
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	@JsonManagedReference
+	@JsonIgnore
 	private List<Comment> comments = new ArrayList<>();
 
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
