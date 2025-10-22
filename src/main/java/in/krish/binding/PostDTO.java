@@ -15,6 +15,7 @@ public class PostDTO {
     private LocalDateTime dateCreated;
     private int likesCount;
     private List<String> likedBy;
+    private UserDTO user; //
 
     public PostDTO(in.krish.entity.Post post) {
         this.id = post.getId();
@@ -24,5 +25,8 @@ public class PostDTO {
         this.dateCreated = post.getDateCreated();
         this.likesCount = post.getLikesCount();
         this.likedBy = post.getLikedBy();
+        if (post.getUser() != null) {
+            this.user = new UserDTO(post.getUser());
+        }
     }
 }
