@@ -119,13 +119,20 @@ public class PostServiceImpl implements PostService {
         }
 
 
-        @Override
-        public Post getPostById (Long id){
-            return postRepo.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
-        }
+    @Transactional(readOnly = true)
+    public Post getPostById(Long id) {
+        Post post = postRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found with id " + id));
 
-        @Transactional
+        // Initialize lazy fields if needed
+        if (post.getContent() != null) {
+            post.getContent(); // forces Hibernate to load the Clob inside transaction
+        }
+        return post;
+    }
+
+
+    @Transactional
         @Override
         public List<Post> getPostsByUser (String userEmail){
             User user = userRepo.findByEmailid(userEmail);
