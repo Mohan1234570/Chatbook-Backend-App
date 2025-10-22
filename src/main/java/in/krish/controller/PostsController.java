@@ -64,12 +64,15 @@ public class PostsController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Post>> getPostById(@PathVariable Long id) {
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<PostDTO>> getPostById(@PathVariable Long id) {
         Post post = postService.getPostById(id);
-        return ResponseEntity.ok(new ApiResponse<>(200, "Post fetched successfully", post));
+        PostDTO dto = new PostDTO(post);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Post fetched successfully", dto));
     }
 
 
+    @Transactional(readOnly = true)
     @GetMapping("/userPosts")
     public ApiResponse<List<PostDTO>> getMyPosts(@AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername(); // email from token
@@ -114,20 +117,32 @@ public class PostsController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<?> likePost(@PathVariable Long postId, @RequestParam String userEmail) {
+    public ResponseEntity<?> likePost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Post post = postService.likePost(postId, userEmail);
-            return ResponseEntity.ok(post);
+            String email = userDetails.getUsername();
+            Post post = postService.likePost(postId, email);
+
+            // Convert to DTO before returning
+            PostDTO postDTO = new PostDTO(post);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Post liked successfully", postDTO));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/{postId}/unlike")
-    public ResponseEntity<?> unlikePost(@PathVariable Long postId, @RequestParam String userEmail) {
+    public ResponseEntity<?> unlikePost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Post post = postService.unlikePost(postId, userEmail);
-            return ResponseEntity.ok(post);
+            String email = userDetails.getUsername();
+            Post post = postService.unlikePost(postId, email);
+
+            // Convert to DTO before returning
+            PostDTO postDTO = new PostDTO(post);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Post unliked successfully", postDTO));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
