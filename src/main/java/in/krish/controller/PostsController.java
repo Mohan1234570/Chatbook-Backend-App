@@ -173,7 +173,6 @@ public class PostsController {
         }
     }
 
-    // Get all comments for a specific post
     @GetMapping("/{postId}/comments")
     public ApiResponse<List<CommentDTO>> getAllComments(@PathVariable Long postId) {
         List<Comment> comments = postService.getAllCommentsForPost(postId);
