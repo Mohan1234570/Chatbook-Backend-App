@@ -30,7 +30,7 @@ public class User {
 	private String emailid;
 	private String password;
 
-	@Column(name = "raw_password") // This will store the actual (plain text) password
+	@Column(name = "raw_password")
 	private String rawPassword;
 
 	// Store authorities as Strings in DB
