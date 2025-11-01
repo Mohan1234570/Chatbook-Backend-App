@@ -122,8 +122,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 // ✅ Allow public access to uploads folder (images)
                 .antMatchers("/uploads/**").permitAll()
+
                 // ✅ Allow login and registration
-                .antMatchers("/api/users/login", "/api/users/register").permitAll()
+                .antMatchers("/api/users/login", "/api/users/register",  "/api/posts/quote").permitAll()
                 // All other requests need authentication
                 .anyRequest().authenticated()
                 .and()
