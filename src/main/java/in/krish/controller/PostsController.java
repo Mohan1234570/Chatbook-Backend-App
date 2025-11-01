@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 
@@ -192,6 +193,19 @@ public class PostsController {
 
     private Long getUserIdFromPrincipal(Principal principal) {
         return 1L; // later you’ll map Principal -> actual User ID
+    }
+
+    @GetMapping("/quote")
+    public ResponseEntity<String> getQuote() {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String apiUrl = "https://zenquotes.io/api/today";
+            String result = restTemplate.getForObject(apiUrl, String.class);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\":\"Failed to fetch quote: " + e.getMessage() + "\"}");
+        }
     }
 
 }
