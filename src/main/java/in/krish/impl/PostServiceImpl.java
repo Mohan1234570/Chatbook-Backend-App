@@ -85,7 +85,7 @@ public class PostServiceImpl implements PostService {
             Post savedPost = postRepo.save(post);
 
             // fan-out notifications
-            // ✅ fan-out notifications to followers
+            // fan-out notifications to followers
             Long userId = user.getUserId();
             List<Follower> followers = followerRepo.findByFollowing_UserId(userId);
             System.out.println("Followers found for user " + userId + ": " + followers.size());
