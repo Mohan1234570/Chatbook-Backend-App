@@ -198,7 +198,6 @@ public class PostServiceImpl implements PostService {
                     Path imagePath = Paths.get(uploadDir, post.getImageUrl().replace("/uploads/", ""));
                     Files.deleteIfExists(imagePath);
                 } catch (IOException e) {
-                    // Log the error or throw a RuntimeException as needed
                     throw new RuntimeException("Failed to delete image file", e);
                 }
             }
