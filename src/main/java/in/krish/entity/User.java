@@ -62,4 +62,18 @@ public class User {
 	@JsonManagedReference
 	private List<Like> likes = new ArrayList<>();
 
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+			name = "user_roles",
+			joinColumns = @JoinColumn(name = "user_id"),
+			inverseJoinColumns = @JoinColumn(name = "role_id")
+	)
+	private Set<Role> roles;
+
+	@Column(name = "mfa_enabled")
+	private boolean mfaEnabled = false;
+
+	@Column(name = "tenant_id")
+	private UUID tenantId;
+
 }
