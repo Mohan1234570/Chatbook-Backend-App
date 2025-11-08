@@ -14,6 +14,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -53,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
 		User user = new User();
 		BeanUtils.copyProperties(form, user);
 		user.setEmailid(email);
-		// ✅ Store the raw password
+		// Store the raw password
 		user.setRawPassword(form.getPassword());
 		user.setPassword(passwordEncoder.encode(form.getPassword()));
 
@@ -76,5 +78,16 @@ public class AuthServiceImpl implements AuthService {
 		} catch (AuthenticationException e) {
 			return false;
 		}
+	}
+
+	@Override
+	public User findByEmail(String email) {
+		return userRepo.findByEmailid(email);
+	}
+
+	@Override
+	public User findUserByIdInfo(Long userId) {
+		User userOpt = userRepo.findUserByUserId(userId);
+		return userOpt;
 	}
 }
