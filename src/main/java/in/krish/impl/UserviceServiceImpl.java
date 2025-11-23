@@ -32,10 +32,10 @@ public class UserviceServiceImpl implements UserService {
         }
 
 
-        // ✅ Call repository method (must return Page<User>)
+        // Call repository method (must return Page<User>)
         Page<User> users = userRepo.searchUsers(query, pageable);
 
-        // ✅ Map User to UserDTO
+        // Map User to UserDTO
         return users.map(this::convertToDTO);
     }
 
