@@ -22,5 +22,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
            OR LOWER(u.emailid) LIKE LOWER(CONCAT('%', :query, '%'))
     """)
 	Page<User> searchUsers(@Param("query") String query, Pageable pageable);
+
+//	User findByUserId(Long userId);     // CORRECT
+
 }
 

@@ -39,6 +39,12 @@ public class UserviceServiceImpl implements UserService {
         return users.map(this::convertToDTO);
     }
 
+    @Override
+    public User getUserByIdInfo(Long userId) {
+        User user = userRepo.findUserByUserId(userId);
+        return user;
+    }
+
 
     private UserDTO convertToDTO(User user) {
         return new UserDTO(
