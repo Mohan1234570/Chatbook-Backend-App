@@ -84,6 +84,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -102,9 +104,11 @@ public class AuthController {
 
     @Autowired
     private RefreshTokenService refreshTokenService;
-
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginForm login, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> login(
+            @RequestBody LoginForm login,
+            HttpServletResponse response) {
+
         System.out.println("==============================");
         System.out.println("🔹 [LOGIN API CALLED]");
         System.out.println("Email: " + login.getEmail());
@@ -113,58 +117,80 @@ public class AuthController {
         System.out.println("==============================");
 
         try {
-            // ✅ 1. Authenticate credentials
             System.out.println("🔹 Authenticating user...");
             authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword()));
+                    new UsernamePasswordAuthenticationToken(
+                            login.getEmail(),
+                            login.getPassword()
+                    )
+            );
             System.out.println("✅ Authentication successful.");
         } catch (Exception ex) {
             System.out.println("❌ Authentication failed: " + ex.getMessage());
-            ApiResponse<String> r = new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid credentials", null);
+            ApiResponse<Map<String, Object>> r =
+                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid credentials", null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(r);
         }
 
-        // ✅ 2. Find user by email
-        System.out.println("🔹 Fetching user from DB...");
+        // ✔ Fetch User
+        System.out.println("🔹 Fetching user data...");
         User user = authService.findByEmail(login.getEmail());
         if (user == null) {
-            System.out.println("❌ User not found in DB for email: " + login.getEmail());
-            ApiResponse<String> r = new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid user", null);
+            ApiResponse<Map<String, Object>> r =
+                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "User not found", null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(r);
         }
 
-        // ✅ 3. Extract roles
+        // ✔ Extract roles
         var roles = user.getRoles() == null ? java.util.List.of() :
                 user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList());
-        System.out.println("🔹 User roles: " + roles);
+        System.out.println("Roles: " + roles);
 
-        // ✅ 4. Generate JWT
-        System.out.println("🔹 Generating access token...");
-        String accessToken = jwtUtil.generateToken(user);
-        System.out.println("✅ Access token generated: " + accessToken);
+        // ✔ Generate JWT
+        String accessToken = jwtUtil.generateToken(user.getEmailid());
+        System.out.println("Token Created: " + accessToken);
 
-        // ✅ 5. Generate Refresh Token
-        System.out.println("🔹 Generating refresh token...");
-        String refreshToken = refreshTokenService.createRefreshToken(user.getUserId(), login.getClientId(), login.getIp());
-        System.out.println("✅ Refresh token generated: " + refreshToken);
+        // ✔ Create Refresh Token
+        String refreshToken = refreshTokenService.createRefreshToken(
+                user.getUserId(),
+                login.getClientId(),
+                login.getIp()
+        );
 
-        // ✅ 6. Set refresh token in cookie
-        System.out.println("🔹 Setting refresh token cookie...");
+        // ✔ Store refresh token in cookie
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-                .secure(false) // ⚠️ Set true in production
+                .secure(false)
                 .path("/api/users")
                 .maxAge(Duration.ofDays(30))
                 .sameSite("Strict")
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        // ✅ 7. Send success response
-        ApiResponse<String> apiResponse = new ApiResponse<>(HttpStatus.OK.value(), "Login successful", accessToken);
-        System.out.println("✅ Login process complete — sending response.");
+        // --------------------------------------
+        // ✔ FIX: Map.of() → use HashMap (allows nulls)
+        // --------------------------------------
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getUserId());
+        userData.put("name", user.getFirstname());
+        userData.put("email", user.getEmailid());
+        userData.put("role", roles.isEmpty() ? "USER" : roles.get(0));
+        userData.put("profileImageUrl", user.getProfileImageUrl());
+
+        Map<String, Object> tokenData = new HashMap<>();
+        tokenData.put("token", accessToken);
+        tokenData.put("user", userData);
+
+        ApiResponse<Map<String, Object>> apiResponse =
+                new ApiResponse<>(200, "Login successful", tokenData);
+
+        System.out.println("✅ Login complete → sending response.");
         System.out.println("==============================");
+
         return ResponseEntity.ok(apiResponse);
     }
+
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<String>> refresh(@CookieValue(name = "refresh_token", required = false) String refreshToken,
@@ -191,7 +217,7 @@ public class AuthController {
         var roles = user.getRoles() == null ? java.util.List.of() :
                 user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList());
 
-        String newAccessToken = jwtUtil.generateToken(user);
+        String newAccessToken = jwtUtil.generateToken(String.valueOf(user));
         String newRefresh = refreshTokenService.rotate(refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", newRefresh)
