@@ -17,23 +17,6 @@ Built with **Spring Boot (Backend)** and **React + Redux + MUI (Frontend)**, the
 
 ## 🏗️ High-Level Architecture  
 
-```mermaid
-flowchart TB
-    subgraph Frontend[React + Redux + MUI]
-        UI[User Interface] --> APIClient[Axios/Fetch API]
-    end
 
-    subgraph Backend[Spring Boot Application]
-        Controller[REST Controllers] --> Service[Business Services]
-        Service --> Repo[Spring Data JPA Repositories]
-        Service --> AIService[OpenAI Service Integration]
-        Repo --> DB[(PostgreSQL Database)]
-        AIService --> OpenAI[OpenAI API / Spring AI]
-    end
+ <img src="docs/chatbook-architecture.png" alt="Chatbook Architecture" width="800"/>
 
-    subgraph Notifications[Async Layer]
-        EventPublisher[Spring Events] --> Notifier[Notification Service]
-    end
-
-    Frontend -->|REST APIs / JSON / SSE| Backend
-    Backend --> Notifications
