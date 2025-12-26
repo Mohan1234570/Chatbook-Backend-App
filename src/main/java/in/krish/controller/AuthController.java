@@ -146,30 +146,30 @@ public class AuthController {
                 user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList());
         System.out.println("Roles: " + roles);
 
-        // ✔ Generate JWT
+//        // ✔ Generate JWT
         String accessToken = jwtUtil.generateToken(user.getEmailid());
-        System.out.println("Token Created: " + accessToken);
-
-        // ✔ Create Refresh Token
-        String refreshToken = refreshTokenService.createRefreshToken(
-                user.getUserId(),
-                login.getClientId(),
-                login.getIp()
-        );
-
-        // ✔ Store refresh token in cookie
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .path("/api/users")
-                .maxAge(Duration.ofDays(30))
-                .sameSite("Strict")
-                .build();
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        // --------------------------------------
-        // ✔ FIX: Map.of() → use HashMap (allows nulls)
-        // --------------------------------------
+//        System.out.println("Token Created: " + accessToken);
+//
+//        // ✔ Create Refresh Token
+//        String refreshToken = refreshTokenService.createRefreshToken(
+//                user.getUserId(),
+//                login.getClientId(),
+//                login.getIp()
+//        );
+//
+//        // ✔ Store refresh token in cookie
+//        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+//                .httpOnly(true)
+//                .secure(false)
+//                .path("/api/users")
+//                .maxAge(Duration.ofDays(30))
+//                .sameSite("Strict")
+//                .build();
+//        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//
+//        // --------------------------------------
+//        // ✔ FIX: Map.of() → use HashMap (allows nulls)
+//        // --------------------------------------
 
         Map<String, Object> userData = new HashMap<>();
         userData.put("id", user.getUserId());

@@ -7,7 +7,7 @@ import in.krish.entity.User;
 
 public interface AuthService {
     boolean registerUser(RegisterForm form);
-    boolean loginUser(LoginForm form);
+    User loginUser(LoginForm form);
     User findUserByIdInfo(Long userId);
     User findByEmail(String email);
 }

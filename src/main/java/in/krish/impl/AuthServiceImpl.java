@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,14 +70,22 @@ public class AuthServiceImpl implements AuthService {
 
 
 
+	// ★ FIXED: return User object instead of boolean
 	@Override
-	public boolean loginUser(LoginForm form) {
+	public User loginUser(LoginForm form) {
 		try {
-			authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(form.getEmail(), form.getPassword()));
-			return true;
-		} catch (AuthenticationException e) {
-			return false;
+			Authentication auth = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(
+							form.getEmail(),
+							form.getPassword()
+					)
+			);
+
+			// If authentication succeeds, find full user details
+			return userRepo.findByEmailid(form.getEmail());
+
+		} catch (AuthenticationException ex) {
+			return null;
 		}
 	}
 
